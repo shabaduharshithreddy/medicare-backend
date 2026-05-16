@@ -22,6 +22,7 @@
   "dependencies": {
     "@capacitor/core": "^5.7.8",
     "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "twilio": "^6.0.2"
   },

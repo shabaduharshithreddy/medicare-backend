@@ -11,13 +11,16 @@ try {
   process.exit(1);
 }
 
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const twilio = require('twilio');
 
-// ✅ Twilio using environment variables
+// Twilio client
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
   process.env.TWILIO_AUTH_TOKEN
@@ -34,12 +37,12 @@ const DOCTOR_AUTH = {
   displayName: 'Dr. Harshith'
 };
 
-// ── Middleware ──
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// ── Database Helpers ──
+// Database Helpers
 function readAll() {
   if (!fs.existsSync(DB)) return [];
 
@@ -54,8 +57,6 @@ function writeAll(data) {
   fs.writeFileSync(DB, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// ── Routes ──
-
 // GET all appointments
 app.get('/api/appointments', (req, res) => {
   const appts = readAll();
@@ -68,7 +69,7 @@ app.get('/api/appointments', (req, res) => {
   );
 });
 
-// POST create appointment
+// Create appointment
 app.post('/api/appointments', (req, res) => {
   const {
     fullName,
@@ -125,7 +126,7 @@ app.post('/api/appointments', (req, res) => {
   res.status(201).json(appt);
 });
 
-// GET single appointment
+// Get single appointment
 app.get('/api/appointments/:id', (req, res) => {
   const appt = readAll().find(
     a => a.id === req.params.id
@@ -140,8 +141,8 @@ app.get('/api/appointments/:id', (req, res) => {
   res.json(appt);
 });
 
-// PATCH appointment status
-app.patch('/api/appointments/:id/status', (req, res) => {
+// Update appointment status
+app.patch('/api/appointments/:id/status', async (req, res) => {
   const { status } = req.body;
 
   const allowed = [
@@ -177,10 +178,43 @@ app.patch('/api/appointments/:id/status', (req, res) => {
     `[PATCH] ${appts[idx].fullName} → ${status}`
   );
 
+  // Auto send SMS
+  try {
+    if (status === 'confirmed') {
+      await client.messages.create({
+        body: 'Doctor confirmed your appointment.',
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: appts[idx].phone
+      });
+
+      console.log(
+        `[SMS] Confirmation sent to ${appts[idx].phone}`
+      );
+    }
+
+    if (status === 'cancelled') {
+      await client.messages.create({
+        body: 'Doctor rejected your appointment.',
+        from: process.env.TWILIO_PHONE_NUMBER,
+        to: appts[idx].phone
+      });
+
+      console.log(
+        `[SMS] Rejection sent to ${appts[idx].phone}`
+      );
+    }
+
+  } catch (err) {
+
+    console.log(
+      `[SMS ERROR] ${err.message}`
+    );
+  }
+
   res.json(appts[idx]);
 });
 
-// DELETE appointment
+// Delete appointment
 app.delete('/api/appointments/:id', (req, res) => {
   const appts = readAll();
 
@@ -208,7 +242,7 @@ app.delete('/api/appointments/:id', (req, res) => {
   });
 });
 
-// Doctor Login
+// Login
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -235,72 +269,6 @@ app.post('/api/auth/logout', (req, res) => {
   });
 });
 
-// ✅ Confirm Patient SMS
-app.post('/confirm-patient', async (req, res) => {
-  const patientPhone = req.body.phone;
-
-  try {
-    await client.messages.create({
-      body: 'Doctor confirmed your appointment.',
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: patientPhone
-    });
-
-    console.log(
-      `[SMS] Confirmation sent to ${patientPhone}`
-    );
-
-    res.json({
-      success: true,
-      message: 'SMS Sent'
-    });
-
-  } catch (err) {
-
-    console.log(
-      `[SMS ERROR] ${err.message}`
-    );
-
-    res.json({
-      success: false,
-      error: err.message
-    });
-  }
-});
-
-// ✅ Reject Patient SMS
-app.post('/reject-patient', async (req, res) => {
-  const patientPhone = req.body.phone;
-
-  try {
-    await client.messages.create({
-      body: 'Doctor rejected your appointment.',
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: patientPhone
-    });
-
-    console.log(
-      `[SMS] Rejection sent to ${patientPhone}`
-    );
-
-    res.json({
-      success: true,
-      message: 'SMS Sent'
-    });
-
-  } catch (err) {
-
-    console.log(
-      `[SMS ERROR] ${err.message}`
-    );
-
-    res.json({
-      success: false,
-      error: err.message
-    });
-  }
-});
-
 // 404
 app.use((req, res) => {
   res.status(404).json({
@@ -308,7 +276,7 @@ app.use((req, res) => {
   });
 });
 
-// ── Start Server ──
+// Start Server
 function startServer(port = PORT) {
 
   const server = app.listen(port, () => {

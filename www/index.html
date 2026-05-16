@@ -689,13 +689,27 @@ async function updateStatus(id, status) {
     const h = { 'Content-Type': 'application/json' };
     if (doctorSession?.token && doctorSession.token !== 'offline') h['Authorization'] = `Bearer ${doctorSession.token}`;
     await fetch(`${API}/api/appointments/${id}/status`, { method:'PATCH', headers:h, body:JSON.stringify({status}) });
-    // Send SMS notification
+    // Send SMS notification (internal API)
     if (appt?.phone) {
       const smsEndpoint = status === 'confirmed' ? '/confirm-patient' : status === 'cancelled' ? '/reject-patient' : null;
       if (smsEndpoint) {
         try {
           await fetch(`${API}${smsEndpoint}`, { method:'POST', headers:h, body:JSON.stringify({phone:appt.phone}) });
         } catch {}
+
+        // Also notify external medicare-clinic host
+        try {
+          const externalUrl = status === 'confirmed'
+            ? 'https://medicare-clinic-al61.onrender.com/confirm-patient'
+            : 'https://medicare-clinic-al61.onrender.com/reject-patient';
+          await fetch(externalUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: appt.phone })
+          });
+        } catch (e) {
+          console.log(e);
+        }
       }
     }
   } catch {}
