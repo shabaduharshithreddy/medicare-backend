@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MediCare – Clinic Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3B5BDB; --blue-light: #EEF2FF; --blue-mid: #748FFC;
+    --dark: #0D1117; --text: #1C1F2E; --muted: #6B7280;
+    --border: #E5E7EB; --bg: #FAFAFA; --white: #FFFFFF;
+    --success: #10B981; --danger: #EF4444; --radius: 12px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  nav { position: sticky; top: 0; z-index: 100; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 64px; }
+  .logo { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 22px; color: var(--dark); }
+  .logo span { color: var(--blue); }
+  .nav-links { display: flex; gap: 10px; align-items: center; }
+  .nav-links button, .nav-links .help-btn { padding: 8px 20px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; transition: all 0.18s; }
+  .nav-links button:hover, .nav-links button.active, .nav-links .help-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .config-banner { display: none; background: #fffbeb; border-bottom: 1px solid #fcd34d; color: #92400e; padding: 16px 24px; text-align: center; }
+  .config-banner p { margin-bottom: 10px; font-size: 14px; }
+  .config-banner input { width: 100%; max-width: 360px; margin: 0 auto 10px; padding: 12px 14px; border: 1px solid #fbbf24; border-radius: 999px; outline: none; }
+  .config-banner button { margin: 0 4px; padding: 10px 18px; border-radius: 999px; border: 1px solid #f59e0b; background: #fde68a; color: #92400e; cursor: pointer; }
+  .config-banner .link-btn { background: transparent; border-color: transparent; color: #2563eb; text-decoration: underline; }
+
+  #nav-doctor-login { padding: 8px 18px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 7px; }
+  #nav-doctor-login:hover { border-color: var(--blue); color: var(--blue); }
+  #nav-doctor-login svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  #nav-doctor-session { display: none; align-items: center; gap: 10px; padding: 6px 6px 6px 14px; border-radius: 100px; background: var(--blue-light); border: 1.5px solid #C7D2FE; }
+  #nav-doctor-session .doc-name { font-size: 13px; font-weight: 600; color: var(--blue); }
+  .session-btn { padding: 5px 14px !important; border-radius: 100px !important; border: 1.5px solid #C7D2FE !important; background: #fff !important; font-size: 12px !important; font-weight: 600 !important; color: var(--blue) !important; cursor: pointer; font-family: 'DM Sans', sans-serif !important; }
+  .session-btn.dash-btn { background: var(--blue) !important; color: #fff !important; border-color: var(--blue) !important; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+  #home-view { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: calc(100vh - 64px); padding: 40px 24px; background: linear-gradient(160deg, #f0f4ff 0%, #fafafa 60%); }
+  #home-view.active { display: flex; }
+
+  /* HERO */
+  .badge { display: inline-block; padding: 6px 18px; border-radius: 100px; background: var(--blue-light); color: var(--blue); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 28px; }
+  .hero-title { font-family: 'Sora', sans-serif; font-size: clamp(36px, 5vw, 58px); font-weight: 800; line-height: 1.15; color: var(--dark); max-width: 620px; margin-bottom: 18px; }
+  .hero-title em { color: var(--blue); font-style: normal; }
+  .hero-sub { font-size: 17px; color: var(--muted); max-width: 440px; line-height: 1.7; margin-bottom: 40px; }
+  .btn-primary { padding: 15px 40px; border-radius: 100px; border: 2px solid var(--dark); background: var(--white); font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: var(--dark); cursor: pointer; transition: all 0.2s; }
+  .btn-primary:hover { background: var(--dark); color: #fff; }
+  .hero-stats { display: flex; gap: 48px; margin-top: 72px; padding-top: 36px; border-top: 1px solid var(--border); }
+  .stat-item { text-align: center; }
+  .stat-num { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 800; color: var(--blue); }
+  .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* BOOK FORM */
+  #book-view { padding: 40px 24px 80px; }
+  .form-container { max-width: 740px; margin: 0 auto; }
+  .form-header { display: flex; align-items: center; gap: 16px; padding-bottom: 28px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .form-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .form-icon svg { width: 26px; height: 26px; }
+  .form-header h1 { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .form-header p { font-size: 14px; color: var(--muted); }
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1.5px solid var(--blue-light); }
+  .form-section { margin-bottom: 36px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9CA3AF; }
+  .field input, .field textarea { padding: 13px 16px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text); transition: border-color 0.15s, box-shadow 0.15s; outline: none; width: 100%; }
+  .field input:focus, .field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,91,219,0.1); }
+  .field input.error { border-color: var(--danger); }
+  .field .err-msg { font-size: 12px; color: var(--danger); }
+  .field input::placeholder, .field textarea::placeholder { color: #C4C9D4; }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .gender-group { display: flex; gap: 12px; }
+  .gender-btn { flex: 1; padding: 12px 10px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.15s; }
+  .gender-btn.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+  .gender-btn:hover:not(.selected) { border-color: #C7D2FE; }
+  .confirm-wrap { display: flex; flex-direction: column; align-items: center; margin-top: 48px; gap: 16px; }
+  .scroll-arrow { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: center; animation: bounce 1.5s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+  .btn-confirm { width: 100%; padding: 17px; border-radius: var(--radius); border: none; background: var(--dark); color: var(--white); font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-confirm:hover { background: var(--blue); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,91,219,0.25); }
+  .btn-confirm:disabled { background: #9CA3AF; cursor: not-allowed; transform: none; box-shadow: none; }
+  .success-screen { display: none; flex-direction: column; align-items: center; text-align: center; padding: 80px 24px; min-height: calc(100vh - 64px); }
+  .success-screen.show { display: flex; }
+  .success-check { width: 80px; height: 80px; border-radius: 50%; background: #ECFDF5; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .success-screen h2 { font-family: 'Sora', sans-serif; font-size: 28px; font-weight: 800; color: var(--dark); margin-bottom: 10px; }
+  .success-screen p { font-size: 15px; color: var(--muted); max-width: 400px; line-height: 1.7; margin-bottom: 32px; }
+  .btn-back { padding: 13px 32px; border-radius: 100px; border: 2px solid var(--border); background: var(--white); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.18s; }
+  .btn-back:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* LOGIN MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(13,17,23,0.6); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: var(--white); border-radius: 20px; width: 100%; max-width: 420px; margin: 20px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.2); animation: slideUp 0.22s ease; }
+  @keyframes slideUp { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-top { background: linear-gradient(135deg, #1e3a8a 0%, var(--blue) 100%); padding: 32px 32px 28px; text-align: center; }
+  .modal-icon { width: 60px; height: 60px; border-radius: 18px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .modal-top h2 { font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .modal-top p { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .modal-body { padding: 28px 32px 32px; }
+  .modal-field { margin-bottom: 18px; }
+  .modal-field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9CA3AF; margin-bottom: 7px; }
+  .modal-field input { width: 100%; padding: 13px 16px; border-radius: var(--radius); border: 1.5px solid var(--border); background: #FAFAFA; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  .modal-field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,91,219,0.1); background: #fff; }
+  .login-error { display: none; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 11px 14px; margin-bottom: 16px; font-size: 13px; color: #991B1B; font-weight: 500; align-items: center; gap: 8px; }
+  .login-error.show { display: flex; }
+  .btn-login { width: 100%; padding: 15px; border-radius: var(--radius); border: none; background: var(--blue); color: #fff; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-login:hover { background: #2f4dbf; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,91,219,0.3); }
+  .btn-login:disabled { background: #9CA3AF; cursor: not-allowed; transform: none; box-shadow: none; }
+  .modal-hint { margin-top: 14px; padding: 10px 14px; background: var(--blue-light); border-radius: 10px; font-size: 12px; color: var(--blue); text-align: center; }
+  .modal-cancel { width: 100%; margin-top: 12px; padding: 10px; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--muted); cursor: pointer; }
+  .modal-cancel:hover { color: var(--text); }
+
+  /* ACCESS DENIED */
+  #access-denied { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: calc(100vh - 64px); padding: 40px 24px; }
+  #access-denied.show { display: flex; }
+  .lock-icon { width: 80px; height: 80px; border-radius: 50%; background: #FEF2F2; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  #access-denied h2 { font-family: 'Sora', sans-serif; font-size: 24px; font-weight: 800; color: var(--dark); margin-bottom: 10px; }
+  #access-denied p { font-size: 15px; color: var(--muted); max-width: 360px; line-height: 1.7; margin-bottom: 28px; }
+
+  /* DOCTOR DASHBOARD */
+  #doctor-view { padding: 40px 24px 80px; }
+  .dashboard-container { max-width: 1050px; margin: 0 auto; }
+  .dash-header { margin-bottom: 32px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .dash-header h1 { font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+  .dash-header p { font-size: 14px; color: var(--muted); }
+  .doctor-badge { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--blue-light); border-radius: 100px; border: 1px solid #C7D2FE; font-size: 13px; font-weight: 600; color: var(--blue); }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px 24px; }
+  .stat-card .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  .stat-card .value { font-family: 'Sora', sans-serif; font-size: 32px; font-weight: 800; color: var(--dark); }
+  .stat-card.blue .value { color: var(--blue); }
+  .stat-card.green .value { color: var(--success); }
+  .filter-row { display: flex; gap: 8px; margin-bottom: 20px; }
+  .date-filter-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 20px; }
+  .date-filter-item { display: flex; flex-direction: column; gap: 8px; }
+  .date-filter-item label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .date-filter-item input { width: 220px; padding: 12px 14px; border-radius: var(--radius); border: 1.5px solid var(--border); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); }
+  .date-summary { display: flex; flex-direction: column; gap: 4px; color: var(--muted); font-size: 14px; }
+  .date-summary strong { color: var(--dark); }
+  .filter-btn { padding: 7px 18px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .filter-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .appt-list { display: flex; flex-direction: column; gap: 12px; }
+  .appt-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px 24px; display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+  .appt-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-color: #C7D2FE; }
+  .appt-card.expanded { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,91,219,0.1); }
+  .avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--blue-light); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: var(--blue); flex-shrink: 0; }
+  .appt-info .name { font-weight: 700; font-size: 15px; color: var(--dark); margin-bottom: 3px; }
+  .appt-info .meta { font-size: 13px; color: var(--muted); }
+  .appt-info .meta span { margin-right: 14px; }
+  .status-badge { padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+  .status-pending { background: #FFF7ED; color: #C2410C; }
+  .status-confirmed { background: #ECFDF5; color: #065F46; }
+  .status-cancelled { background: #FEF2F2; color: #991B1B; }
+  .appt-detail { display: none; grid-column: 1 / -1; border-top: 1px solid var(--border); margin-top: 12px; padding-top: 18px; }
+  .appt-card.expanded .appt-detail { display: block; }
+  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+  .detail-item .d-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #9CA3AF; margin-bottom: 4px; }
+  .detail-item .d-val { font-size: 14px; color: var(--text); font-weight: 500; }
+  .reason-box { background: #F8FAFF; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+  .reason-box .d-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #9CA3AF; margin-bottom: 6px; }
+  .reason-box .d-val { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .action-row { display: flex; gap: 10px; }
+  .action-btn { padding: 9px 22px; border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid; transition: all 0.15s; }
+  .action-confirm { border-color: var(--success); color: var(--success); background: #fff; }
+  .action-confirm:hover { background: #ECFDF5; }
+  .action-cancel { border-color: var(--danger); color: var(--danger); background: #fff; }
+  .action-cancel:hover { background: #FEF2F2; }
+  .empty-state { text-align: center; padding: 60px 0; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  @media (max-width: 640px) {
+    nav { padding: 0 16px; }
+    .form-row { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr 1fr; }
+    .hero-stats { flex-direction: column; gap: 24px; }
+    .modal-top, .modal-body { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Medi<span>Care</span></div>
+  <div class="nav-links">
+    <button onclick="showView('home')" id="nav-home" class="active">Home</button>
+    <button onclick="showView('book')" id="nav-book">Book Appointment</button>
+    <button class="help-btn" onclick="window.location.href='mailto:MediCare@gmail.com'" title="Help Line: 9515953445 / MediCare@gmail.com">Help Line: 9515953445 / MediCare@gmail.com</button>
+
+    <!-- Shown when NOT logged in — patients only see this lock icon button -->
+    <button id="nav-doctor-login" onclick="openLoginModal()" title="Doctor Login">
+      <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Doctor Login
+    </button>
+
+    <!-- Shown only after successful login -->
+    <div id="nav-doctor-session">
+      <span class="doc-name" id="session-name"></span>
+      <button class="session-btn dash-btn" onclick="showView('doctor')">Dashboard</button>
+      <button class="session-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</nav>
+<div id="server-config-banner" class="config-banner">
+  <p><strong>Mobile setup:</strong> Enter the API host for the backend server.</p>
+  <input id="api-host-input" placeholder="http://192.168.x.x:4000" />
+  <div>
+    <button onclick="saveApiHost()">Save API Host</button>
+    <button class="link-btn" onclick="useDefaultApiHost()">Use localhost</button>
+  </div>
+</div>
+
+<!-- LOGIN MODAL — blocks access until credentials verified -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal-box">
+    <div class="modal-top">
+      <div class="modal-icon">
+        <svg width="28" height="28" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <h2>Doctor Login</h2>
+      <p>Restricted area — authorised doctors only</p>
+    </div>
+    <div class="modal-body">
+      <div class="login-error" id="login-error">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="login-error-msg">Invalid username or password.</span>
+      </div>
+      <div class="modal-field">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter your username" autocomplete="username" />
+      </div>
+      <div class="modal-field">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" />
+      </div>
+      <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In to Dashboard</button>
+      <div class="modal-hint">Default credentials: <strong>harshith</strong> / <strong>123</strong></div>
+      <button class="modal-cancel" onclick="closeLoginModal()">Cancel — go back</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home-view" class="view active">
+  <div class="badge">Trusted Clinic Portal</div>
+  <h1 class="hero-title">Quality Care,<br><em>Simplified</em> for You</h1>
+  <p class="hero-sub">Book your appointment in seconds. Our specialists are ready to help you feel your best.</p>
+  <button class="btn-primary" onclick="showView('book')">Book Appointment</button>
+  
+</div>
+
+<!-- BOOK APPOINTMENT -->
+<div id="book-view" class="view">
+  <div id="success-screen" class="success-screen">
+    <div class="success-check">
+      <svg width="36" height="36" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Appointment Confirmed!</h2>
+    <p>Thank you, <strong id="success-name"></strong>. Your request has been sent to the doctor. A confirmation will be sent to <strong id="success-email"></strong>.</p>
+    <button class="btn-back" onclick="resetForm()">← Book Another</button>
+  </div>
+  <div class="form-container" id="form-wrap">
+    <div class="form-header">
+      <div class="form-icon">
+        <svg fill="none" stroke="#3B5BDB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/>
+        </svg>
+      </div>
+      <div><h1>Book Your Appointment</h1><p>Complete the form below and we'll confirm your slot soon.</p></div>
+    </div>
+    <form id="appt-form" novalidate>
+      <div class="form-section">
+        <div class="section-title">Personal Details</div>
+        <div class="form-row" style="margin-bottom:20px">
+          <div class="field"><label>Full Name</label><input type="text" id="fullName" placeholder="e.g. Arjun Sharma" /><span class="err-msg" id="err-fullName"></span></div>
+          <div class="field"><label>Age</label><input type="number" id="age" placeholder="Years" min="1" max="120" /><span class="err-msg" id="err-age"></span></div>
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <div class="gender-group">
+            <button type="button" class="gender-btn" onclick="selectGender('Male')">Male</button>
+            <button type="button" class="gender-btn" onclick="selectGender('Female')">Female</button>
+            <button type="button" class="gender-btn" onclick="selectGender('Other')">Other</button>
+          </div>
+          <input type="hidden" id="gender" /><span class="err-msg" id="err-gender"></span>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-title">Contact Info</div>
+        <div class="form-row">
+          <div class="field"><label>Phone Number</label><input type="tel" id="phone" placeholder="+91 98765 43210" /><span class="err-msg" id="err-phone"></span></div>
+          <div class="field"><label>Email Address</label><input type="email" id="email" placeholder="you@example.com" /><span class="err-msg" id="err-email"></span></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="section-title">Appointment Slot</div>
+        <div class="form-row" style="margin-bottom:20px">
+          <div class="field"><label>Preferred Date</label><input type="date" id="date" /><span class="err-msg" id="err-date"></span></div>
+          <div class="field"><label>Preferred Time</label><input type="time" id="time" /><span class="err-msg" id="err-time"></span></div>
+        </div>
+        <div class="field"><label>Reason / Symptoms (Optional)</label><textarea id="reason" placeholder="Brief description of your concern"></textarea></div>
+      </div>
+      <div class="confirm-wrap">
+        <div class="scroll-arrow">
+          <svg width="18" height="18" fill="none" stroke="#6B7280" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        </div>
+        <button type="submit" class="btn-confirm" id="submit-btn">Confirm Appointment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ACCESS DENIED (shown when someone tries to reach dashboard without login) -->
+<div id="access-denied">
+  <div class="lock-icon">
+    <svg width="36" height="36" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  </div>
+  <h2>Access Restricted</h2>
+  <p>The Doctor's Dashboard is only available to authorised medical staff. Please log in with your credentials.</p>
+  <button class="btn-primary" onclick="openLoginModal()">Doctor Login</button>
+</div>
+
+<!-- DOCTOR DASHBOARD (only rendered after successful auth) -->
+<div id="doctor-view" class="view">
+  <div class="dashboard-container">
+    <div class="dash-header">
+      <div>
+        <h1>Doctor's Dashboard</h1>
+        <p>Review and manage incoming patient appointments</p>
+      </div>
+      <div class="doctor-badge">
+        <svg width="15" height="15" fill="none" stroke="#3B5BDB" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="dash-doc-name"></span>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="label">Total Appointments</div><div class="value" id="stat-total">0</div></div>
+      <div class="stat-card blue"><div class="label">Pending Review</div><div class="value" id="stat-pending">0</div></div>
+      <div class="stat-card green"><div class="label">Confirmed</div><div class="value" id="stat-confirmed">0</div></div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterAppts('all',this)">All</button>
+      <button class="filter-btn" onclick="filterAppts('pending',this)">Pending</button>
+      <button class="filter-btn" onclick="filterAppts('confirmed',this)">Confirmed</button>
+      <button class="filter-btn" onclick="filterAppts('cancelled',this)">Cancelled</button>
+    </div>
+    <div class="date-filter-row">
+      <div class="date-filter-item">
+        <label for="dashboard-date">Selected appointment date</label>
+        <input type="date" id="dashboard-date" onchange="updateDashboardDate(this.value)" />
+      </div>
+      <div class="date-summary">
+        <div>Showing appointments from <strong id="range-start"></strong> to <strong id="range-end"></strong></div>
+        <div><strong id="exact-date-count">0</strong> appointment(s) on selected date</div>
+      </div>
+    </div>
+    <div class="appt-list" id="appt-list">
+      <div class="empty-state"><div class="icon">📋</div><p>No appointments yet.</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Auth state ──
+let doctorSession = null;
+let appointments  = [];
+let selectedGender = '';
+let currentFilter  = 'all';
+let dashboardDate   = new Date().toISOString().slice(0,10);
+const MOBILE_DEFAULT_API = 'http://127.0.0.1:4000';
+const MOBILE_API = localStorage.getItem('mc_api_host') || MOBILE_DEFAULT_API;
+const API = window.location.protocol === 'file:' ? MOBILE_API : window.location.origin;
+
+function saveApiHost() {
+  const host = document.getElementById('api-host-input').value.trim();
+  if (!host) {
+    alert('Enter the backend server address first.');
+    return;
+  }
+  localStorage.setItem('mc_api_host', host);
+  location.reload();
+}
+
+function useDefaultApiHost() {
+  localStorage.removeItem('mc_api_host');
+  location.reload();
+}
+
+function showApiHostBanner() {
+  if (window.location.protocol !== 'file:') return;
+  const banner = document.getElementById('server-config-banner');
+  banner.style.display = 'block';
+  document.getElementById('api-host-input').value = MOBILE_API;
+}
+
+function getDashboardDateWindow() {
+  const selected = new Date(dashboardDate + 'T00:00:00');
+  const start = new Date(selected);
+  const end = new Date(selected);
+  start.setMonth(start.getMonth() - 2);
+  end.setMonth(end.getMonth() + 2);
+  return { start, end };
+}
+
+function updateDashboardDate(value) {
+  dashboardDate = value || dashboardDate;
+  const input = document.getElementById('dashboard-date');
+  if (input) input.value = dashboardDate;
+  const { start, end } = getDashboardDateWindow();
+  document.getElementById('range-start').textContent = fmtDate(start.toISOString().slice(0,10));
+  document.getElementById('range-end').textContent = fmtDate(end.toISOString().slice(0,10));
+  renderList();
+}
+
+// Restore session from sessionStorage (auto-clears when browser/tab closes)
+(function () {
+  const s = sessionStorage.getItem('mc_doc_session');
+  if (s) { doctorSession = JSON.parse(s); showSessionNav(); }
+})();
+
+showApiHostBanner();
+
+// ── Navigation ──
+function showView(v) {
+  if (v === 'doctor' && !doctorSession) {
+    // Show access denied + open login
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById('access-denied').classList.add('show');
+    openLoginModal();
+    return;
+  }
+  document.getElementById('access-denied').classList.remove('show');
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('#nav-home,#nav-book').forEach(el => el.classList.remove('active'));
+  const views = { home:'home-view', book:'book-view', doctor:'doctor-view' };
+  const navs  = { home:'nav-home', book:'nav-book' };
+  document.getElementById(views[v]).classList.add('active');
+  if (navs[v]) document.getElementById(navs[v]).classList.add('active');
+  if (v === 'doctor') renderDashboard();
+}
+
+// ── Login modal ──
+function openLoginModal() {
+  document.getElementById('login-modal').classList.add('show');
+  setTimeout(() => document.getElementById('login-username').focus(), 100);
+  clearLoginError();
+}
+function closeLoginModal() {
+  document.getElementById('login-modal').classList.remove('show');
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  clearLoginError();
+}
+function clearLoginError() { document.getElementById('login-error').classList.remove('show'); }
+function showLoginError(m) { document.getElementById('login-error-msg').textContent = m; document.getElementById('login-error').classList.add('show'); }
+
+document.getElementById('login-modal').addEventListener('click', e => { if (e.target.id === 'login-modal') closeLoginModal(); });
+document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) { showLoginError('Please enter username and password.'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+  clearLoginError();
+
+  try {
+    const res  = await fetch(`${API}/api/auth/login`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { showLoginError(data.error || 'Invalid credentials.'); }
+    else { loginSuccess({ ...data }); }
+  } catch {
+    // Offline / server-down fallback for local demo mode
+    if (username === 'harshith' && password === '123')
+      loginSuccess({ username: 'harshith', displayName: 'Dr. Harshith', token: 'offline' });
+    else
+      showLoginError('Cannot reach server. Check credentials and try again.');
+  }
+
+  btn.disabled = false; btn.textContent = 'Sign In to Dashboard';
+}
+
+function loginSuccess(data) {
+  doctorSession = data;
+  sessionStorage.setItem('mc_doc_session', JSON.stringify(doctorSession));
+  showSessionNav();
+  closeLoginModal();
+  document.getElementById('access-denied').classList.remove('show');
+  showView('doctor');
+}
+
+function showSessionNav() {
+  document.getElementById('nav-doctor-login').style.display  = 'none';
+  document.getElementById('nav-doctor-session').style.display = 'flex';
+  document.getElementById('session-name').textContent  = doctorSession.displayName;
+  document.getElementById('dash-doc-name').textContent = doctorSession.displayName;
+}
+
+function logout() {
+  doctorSession = null;
+  sessionStorage.removeItem('mc_doc_session');
+  document.getElementById('nav-doctor-login').style.display  = '';
+  document.getElementById('nav-doctor-session').style.display = 'none';
+  fetch(`${API}/api/auth/logout`, { method: 'POST' }).catch(() => {});
+  showView('home');
+}
+
+// ── Patient form ──
+function selectGender(g) {
+  selectedGender = g;
+  document.getElementById('gender').value = g;
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('selected', b.textContent === g));
+  document.getElementById('err-gender').textContent = '';
+}
+
+function validate() {
+  const rules = [
+    { id:'fullName', msg:'Full name is required', fn: v => v.trim().length > 1 },
+    { id:'age',      msg:'Enter a valid age (1–120)', fn: v => v && +v>=1 && +v<=120 },
+    { id:'gender',   msg:'Please select a gender', fn: v => v !== '' },
+    { id:'phone',    msg:'Enter a valid phone number', fn: v => /\d{7,}/.test(v.replace(/\s/g,'')) },
+    { id:'email',    msg:'Enter a valid email', fn: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id:'date',     msg:'Select a date', fn: v => v !== '' },
+    { id:'time',     msg:'Select a time', fn: v => v !== '' },
+  ];
+  let ok = true;
+  rules.forEach(r => {
+    const el = document.getElementById(r.id);
+    const errEl = document.getElementById('err-' + r.id);
+    const val = el ? el.value : selectedGender;
+    if (!r.fn(val)) {
+      if (errEl) errEl.textContent = r.msg;
+      if (el?.tagName==='INPUT') el.classList.add('error');
+      ok = false;
+    } else {
+      if (errEl) errEl.textContent = '';
+      if (el?.tagName==='INPUT') el.classList.remove('error');
+    }
+  });
+  return ok;
+}
+
+document.getElementById('appt-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  if (!validate()) return;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+
+  const appt = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+    fullName: document.getElementById('fullName').value.trim(),
+    age:      document.getElementById('age').value,
+    gender:   selectedGender,
+    phone:    document.getElementById('phone').value.trim(),
+    email:    document.getElementById('email').value.trim(),
+    date:     document.getElementById('date').value,
+    time:     document.getElementById('time').value,
+    reason:   document.getElementById('reason').value.trim(),
+    status:   'pending',
+    submittedAt: new Date().toISOString()
+  };
+
+  try {
+    await fetch(`${API}/api/appointments`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(appt)
+    });
+  } catch {}
+
+  const local = JSON.parse(localStorage.getItem('mc_appointments')||'[]');
+  local.unshift(appt);
+  localStorage.setItem('mc_appointments', JSON.stringify(local));
+
+  document.getElementById('success-name').textContent  = appt.fullName;
+  document.getElementById('success-email').textContent = appt.email;
+  document.getElementById('form-wrap').style.display = 'none';
+  document.getElementById('success-screen').classList.add('show');
+  btn.disabled = false; btn.textContent = 'Confirm Appointment';
+});
+
+function resetForm() {
+  document.getElementById('appt-form').reset();
+  selectedGender = '';
+  document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('form-wrap').style.display = '';
+  document.getElementById('success-screen').classList.remove('show');
+}
+
+// ── Confirm Patient ──
+const confirmPatient = async (patient) => {
+  try {
+    await fetch('https://medicare-clinic-al61.onrender.com/confirm-patient', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: patient.phone,
+      }),
+    });
+
+    alert('Patient Confirmed');
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// ── Reject Patient ──
+const rejectPatient = async (patient) => {
+  try {
+    await fetch('https://medicare-clinic-al61.onrender.com/reject-patient', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone: patient.phone,
+      }),
+    });
+
+    alert('Patient Rejected');
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// ── Wrapper functions for button onclick ──
+const confirmPatientFromButton = (apptId) => {
+  const appt = appointments.find(a => a.id === apptId);
+  if (appt) {
+    confirmPatient(appt);
+    updateStatus(apptId, 'confirmed');
+  }
+};
+
+const rejectPatientFromButton = (apptId) => {
+  const appt = appointments.find(a => a.id === apptId);
+  if (appt) {
+    rejectPatient(appt);
+    updateStatus(apptId, 'cancelled');
+  }
+};
+
+// ── Dashboard (only called when authenticated) ──
+async function renderDashboard() {
+  try {
+    const h = {};
+    if (doctorSession?.token && doctorSession.token !== 'offline') h['Authorization'] = `Bearer ${doctorSession.token}`;
+    const res = await fetch(`${API}/api/appointments`, { headers: h });
+    if (res.status === 401) { logout(); return; }
+    appointments = await res.json();
+  } catch {
+    appointments = JSON.parse(localStorage.getItem('mc_appointments')||'[]');
+  }
+  updateDashboardDate();
+}
+
+function renderList() {
+  const { start, end } = getDashboardDateWindow();
+  const filteredByWindow = appointments.filter(a => {
+    const appointmentDate = new Date(a.date + 'T00:00:00');
+    return appointmentDate >= start && appointmentDate <= end;
+  });
+  const exactDateList = filteredByWindow.filter(a => a.date === dashboardDate);
+  const list = currentFilter === 'all' ? exactDateList : exactDateList.filter(a => a.status === currentFilter);
+  document.getElementById('stat-total').textContent     = filteredByWindow.length;
+  document.getElementById('stat-pending').textContent   = filteredByWindow.filter(a=>a.status==='pending').length;
+  document.getElementById('stat-confirmed').textContent = filteredByWindow.filter(a=>a.status==='confirmed').length;
+  document.getElementById('exact-date-count').textContent = exactDateList.length;
+
+  const c = document.getElementById('appt-list');
+  if (!list.length) { c.innerHTML = `<div class="empty-state"><div class="icon">📋</div><p>No ${currentFilter==='all'?'':currentFilter+' '}appointments found on the selected date.</p></div>`; return; }
+
+  c.innerHTML = list.map(a => `
+    <div class="appt-card" id="card-${a.id}" onclick="toggleCard('${a.id}')">
+      <div class="avatar">${initials(a.fullName)}</div>
+      <div class="appt-info">
+        <div class="name">${esc(a.fullName)}</div>
+        <div class="meta">
+          <span>📅 ${fmtDate(a.date)} at ${fmtTime(a.time)}</span>
+          <span>· ${a.age}y · ${a.gender}</span>
+        </div>
+      </div>
+      <span class="status-badge status-${a.status}">${a.status}</span>
+      <div class="appt-detail">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="d-label">Phone</div><div class="d-val">${esc(a.phone)}</div></div>
+          <div class="detail-item"><div class="d-label">Email</div><div class="d-val">${esc(a.email)}</div></div>
+          <div class="detail-item"><div class="d-label">Submitted</div><div class="d-val">${new Date(a.submittedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div></div>
+        </div>
+        ${a.reason ? `<div class="reason-box"><div class="d-label">Reason / Symptoms</div><div class="d-val">${esc(a.reason)}</div></div>`:''}
+        <div class="action-row">
+          <button class="action-btn action-confirm" onclick="event.stopPropagation();confirmPatientFromButton('${a.id}')">✓ Confirm</button>
+          <button class="action-btn action-cancel"  onclick="event.stopPropagation();rejectPatientFromButton('${a.id}')">✕ Cancel</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleCard(id) { document.getElementById('card-'+id).classList.toggle('expanded'); }
+
+function filterAppts(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+async function updateStatus(id, status) {
+  const appt = appointments.find(a => a.id === id);
+  appointments = appointments.map(a => a.id===id ? {...a,status} : a);
+  const local = JSON.parse(localStorage.getItem('mc_appointments')||'[]').map(a => a.id===id ? {...a,status} : a);
+  localStorage.setItem('mc_appointments', JSON.stringify(local));
+  try {
+    const h = { 'Content-Type': 'application/json' };
+    if (doctorSession?.token && doctorSession.token !== 'offline') h['Authorization'] = `Bearer ${doctorSession.token}`;
+    await fetch(`${API}/api/appointments/${id}/status`, { method:'PATCH', headers:h, body:JSON.stringify({status}) });
+    // Send SMS notification
+    if (appt?.phone) {
+      const smsEndpoint = status === 'confirmed' ? '/confirm-patient' : status === 'cancelled' ? '/reject-patient' : null;
+      if (smsEndpoint) {
+        try {
+          await fetch(`${API}${smsEndpoint}`, { method:'POST', headers:h, body:JSON.stringify({phone:appt.phone}) });
+        } catch {}
+      }
+    }
+  } catch {}
+  renderList();
+}
+
+// ── Helpers ──
+function initials(n) { return n.split(' ').map(p=>p[0]).filter(Boolean).slice(0,2).join('').toUpperCase(); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(d) { if(!d)return''; return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtTime(t) { if(!t)return''; const[h,m]=t.split(':');const hr=+h;return`${hr%12||12}:${m} ${hr>=12?'PM':'AM'}`; }
+</script>
+</body>
+</html>
